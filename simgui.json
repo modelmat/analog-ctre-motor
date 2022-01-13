@@ -64,6 +64,24 @@
                 1.0
               ],
               "id": "NT:/SmartDashboard/Setpoint"
+            },
+            {
+              "color": [
+                0.7686275243759155,
+                0.30588236451148987,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/PositionSim"
+            },
+            {
+              "color": [
+                0.5058823823928833,
+                0.44705885648727417,
+                0.7019608020782471,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/VelocitySim"
             }
           ],
           "viewTime": 30.0

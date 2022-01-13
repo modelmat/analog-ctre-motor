@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonSRXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -30,7 +31,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_motor.config_kP(0, 1);
-    m_motor.config_kD(0, 10);
+    m_motor.config_kD(0, 0);
     m_motor.config_kI(0, 0);
 
     m_motor.configSelectedFeedbackSensor(FeedbackDevice.Analog);
@@ -97,28 +98,20 @@ public class Robot extends TimedRobot {
 
   // Only necessary for sim
   TalonSRXSimCollection m_simCollection = new TalonSRXSimCollection(m_motor);
-  double m_simPosition = 0;
-  double m_simVelocity = 0;
-
-  public double getAccel(double voltage) {
-    // dw/dt = Kt/JR(V - w/Kv).
-    // Let us make max velocity be half rot / second
-    // 12 - 524/Kv = 0; Kv ~= 44
-    // Let J = R = 1, Kt = 25
-    // dw/dt = 25(V - w/44)
-    return 25 * (voltage - m_simVelocity / 44);
-  }
+  SpinnyMotorSim m_motorSim = new SpinnyMotorSim(DCMotor.getCIM(1), 1, 1);
 
   @Override
   public void simulationInit() {}
 
   @Override
   public void simulationPeriodic() {
-    // This is really bad code
-    m_simVelocity += getAccel(m_motor.getMotorOutputVoltage()) * 0.020;
-    m_simPosition += m_simVelocity * 0.020;
+    m_motorSim.setInputVoltage(m_motor.getMotorOutputVoltage());
+    m_motorSim.update(0.020);
 
-    m_simCollection.setAnalogPosition((int)m_simPosition);
-    m_simCollection.setAnalogVelocity((int)m_simVelocity);
+    SmartDashboard.putNumber("PositionSim", m_motorSim.getAngularPositionRotations() * 1024);
+    SmartDashboard.putNumber("VelocitySim", m_motorSim.getAngularVelocityRPM() / 60 * 1024);
+
+    m_simCollection.setAnalogPosition((int)m_motorSim.getAngularPositionRotations() * 1024);
+    m_simCollection.setAnalogVelocity((int)m_motorSim.getAngularVelocityRPM() / 60 * 1024 / 10);
   }
 }
